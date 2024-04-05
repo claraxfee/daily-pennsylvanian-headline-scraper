@@ -13,23 +13,28 @@ import requests
 import loguru
 
 
-def scrape_data_point():
+def scrape_sports():
     """
-    Scrapes the main headline from The Daily Pennsylvanian home page.
+    Scrapes the sports headlines from The Daily Pennsylvanian home page.
 
     Returns:
-        str: The headline text if found, otherwise an empty string.
+        sportlist: A list of sports headline texts if found, otherwise an empty list.
     """
     req = requests.get("https://www.thedp.com")
     loguru.logger.info(f"Request URL: {req.url}")
     loguru.logger.info(f"Request status code: {req.status_code}")
 
+    sportsHeadlines = [] #init empty list
+
     if req.ok:
         soup = bs4.BeautifulSoup(req.text, "html.parser")
-        target_element = soup.find("a", class_="frontpage-link")
-        data_point = "" if target_element is None else target_element.text
-        loguru.logger.info(f"Data point: {data_point}")
-        return data_point
+        target_elements = soup.find_all("div", class_="sports-edition") #get sports divs
+        for target_element in target_elements:
+            headlineLink = target_div.find("a", class_="sports-link standard-link")
+            headline = "" if headlineLink is None else headlineLink.text
+            sportsHeadlines.append(headline)
+            loguru.logger.info(f"Data point: {headline}")
+    return sportsHeadlines
 
 
 if __name__ == "__main__":
@@ -54,14 +59,15 @@ if __name__ == "__main__":
     # Run scrape
     loguru.logger.info("Starting scrape")
     try:
-        data_point = scrape_data_point()
+        sportsHeadlines = scrape_sports()
     except Exception as e:
-        loguru.logger.error(f"Failed to scrape data point: {e}")
-        data_point = None
+        loguru.logger.error(f"Failed to scrape sports headline: {e}")
+        sportsHeadlines = []
 
     # Save data
-    if data_point is not None:
-        dem.add_today(data_point)
+    if sportsHeadlines: 
+        for headline in sportsHeadlines:
+            dem.add_today(headline)
         dem.save()
         loguru.logger.info("Saved daily event monitor")
 
