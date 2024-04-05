@@ -18,23 +18,23 @@ def scrape_sports():
     Scrapes the sports headlines from The Daily Pennsylvanian home page.
 
     Returns:
-        sportlist: A list of sports headline texts if found, otherwise an empty list.
+        all_news: A list of sports headline texts if found, otherwise an empty list.
     """
     req = requests.get("https://www.thedp.com/section/news")
     loguru.logger.info(f"Request URL: {req.url}")
     loguru.logger.info(f"Request status code: {req.status_code}")
 
-    sportsHeadlines = [] #init empty list
+    all_news = [] #init empty list
 
     if req.ok:
         soup = bs4.BeautifulSoup(req.text, "html.parser")
         target_elements = soup.find_all("h3", class_="standard-link") #get all divs
         for target_element in target_elements:
-            headlineLink = target_div.find("a")
+            headlineLink = target_element.find("a")
             headline = "" if headlineLink is None else headlineLink.text
-            sportsHeadlines.append(headline)
+            all_news.append(headline)
             loguru.logger.info(f"Data point: {headline}")
-    return sportsHeadlines
+    return all_news
 
 
 if __name__ == "__main__":
@@ -59,14 +59,14 @@ if __name__ == "__main__":
     # Run scrape
     loguru.logger.info("Starting scrape")
     try:
-        sportsHeadlines = scrape_sports()
+        all_news = scrape_sports()
     except Exception as e:
-        loguru.logger.error(f"Failed to scrape sports headline: {e}")
-        sportsHeadlines = []
+        loguru.logger.error(f"Failed to scrape news headline: {e}")
+        all_news = []
 
     # Save data
-    if sportsHeadlines: 
-        for headline in sportsHeadlines:
+    if all_news: 
+        for headline in all_news:
             dem.add_today(headline)
         dem.save()
         loguru.logger.info("Saved daily event monitor")
