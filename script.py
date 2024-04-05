@@ -20,7 +20,7 @@ def scrape_sports():
     Returns:
         sportlist: A list of sports headline texts if found, otherwise an empty list.
     """
-    req = requests.get("https://www.thedp.com")
+    req = requests.get("https://www.thedp.com/section/sports")
     loguru.logger.info(f"Request URL: {req.url}")
     loguru.logger.info(f"Request status code: {req.status_code}")
 
@@ -28,9 +28,9 @@ def scrape_sports():
 
     if req.ok:
         soup = bs4.BeautifulSoup(req.text, "html.parser")
-        target_elements = soup.find_all("div", class_="sports-edition") #get sports divs
+        target_elements = soup.find_all("h3", class_="standard-link") #get all divs
         for target_element in target_elements:
-            headlineLink = target_div.find("a", class_="sports-link standard-link")
+            headlineLink = target_div.find("a")
             headline = "" if headlineLink is None else headlineLink.text
             sportsHeadlines.append(headline)
             loguru.logger.info(f"Data point: {headline}")
