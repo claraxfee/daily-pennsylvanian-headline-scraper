@@ -37,7 +37,7 @@ def scrape_news():
     return all_news
 
 
-def scrap_most_read():
+def scrape_most_read():
     """
     Scrapes the most read headlines from The Daily Pennsylvanian home page.
 
