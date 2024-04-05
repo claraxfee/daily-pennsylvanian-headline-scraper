@@ -20,7 +20,7 @@ def scrape_sports():
     Returns:
         sportlist: A list of sports headline texts if found, otherwise an empty list.
     """
-    req = requests.get("https://www.thedp.com/section/sports")
+    req = requests.get("https://www.thedp.com/section/news")
     loguru.logger.info(f"Request URL: {req.url}")
     loguru.logger.info(f"Request status code: {req.status_code}")
 
