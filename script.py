@@ -13,12 +13,12 @@ import requests
 import loguru
 
 
-def scrape_sports():
+def scrape_news():
     """
-    Scrapes the sports headlines from The Daily Pennsylvanian home page.
+    Scrapes the news headlines from The Daily Pennsylvanian home page.
 
     Returns:
-        all_news: A list of sports headline texts if found, otherwise an empty list.
+        all_news: A list of news headline texts if found, otherwise an empty list.
     """
     req = requests.get("https://www.thedp.com/section/news")
     loguru.logger.info(f"Request URL: {req.url}")
@@ -28,9 +28,34 @@ def scrape_sports():
 
     if req.ok:
         soup = bs4.BeautifulSoup(req.text, "html.parser")
-        target_elements = soup.find_all("h3", class_="standard-link") #get all divs
+        target_elements = soup.find_all("h3", class_="standard-link") #get all 
         for target_element in target_elements:
             headlineLink = target_element.find("a")
+            headline = "" if headlineLink is None else headlineLink.text
+            all_news.append(headline)
+            loguru.logger.info(f"Data point: {headline}")
+    return all_news
+
+
+def scrap_most_read():
+    """
+    Scrapes the most read headlines from The Daily Pennsylvanian home page.
+
+    Returns:
+        all_most_read: A list of most read headline texts if found, otherwise an empty list.
+    """
+
+    req = requests.get("https://www.thedp.com")
+    loguru.logger.info(f"Request URL: {req.url}")
+    loguru.logger.info(f"Request status code: {req.status_code}")
+
+    all_most_read = [] #init empty list
+
+    if req.ok:
+        soup = bs4.BeautifulSoup(req.text, "html.parser")
+        target_mostreads = soup.find_all("div", class_="col-sm-5 most-read-item") #get all 
+        for target_mostread in target_mostreads:
+            headlineLink = target_mostread.find("a", class_= "frontpage-link standard-link")
             headline = "" if headlineLink is None else headlineLink.text
             all_news.append(headline)
             loguru.logger.info(f"Data point: {headline}")
@@ -59,17 +84,24 @@ if __name__ == "__main__":
     # Run scrape
     loguru.logger.info("Starting scrape")
     try:
-        all_news = scrape_sports()
+        all_news = scrape_news()
     except Exception as e:
         loguru.logger.error(f"Failed to scrape news headline: {e}")
         all_news = []
+    try:
+        all_most_read = scrape_most_read()
+    except Exception as e:
+        loguru.logger.error(f"Failed to scrape most read headline: {e}")
+        all_most_read = []
 
     # Save data
-    if all_news: 
-        for headline in all_news:
+    
+    combined = all_most_read + all_news
+    for headline in combined:
+        if headline in all_most_read and headline in all_news:
             dem.add_today(headline)
         dem.save()
-        loguru.logger.info("Saved daily event monitor")
+    loguru.logger.info("Saved daily event monitor")
 
     def print_tree(directory, ignore_dirs=[".git", "__pycache__"]):
         loguru.logger.info(f"Printing tree of files/dirs at {directory}")
